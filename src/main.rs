@@ -1,5 +1,6 @@
 
 mod util;
+mod vectors;
 
 fn main() {
     //println!("RustRays!");
