@@ -1,5 +1,4 @@
 // util.rs - Utility functions for simple ray tracer
-use std::io::*;
 
 pub fn output_image() {
     // image properties
@@ -16,7 +15,7 @@ pub fn output_image() {
 
     for j in (0..IMAGE_HEIGHT).rev() {
         //std::io::stderr().write_fmt("\nScanlines remaining: {} ", j);
-        write!(std::io::stderr(), "\nScanlines remaining: {} ", j);
+        eprintln!("\nScanlines remaining: {} ", j);
         for i in 0..IMAGE_WIDTH {
             let r = i as f32 / (IMAGE_WIDTH as f32 - 1.0);
             let g = j as f32 / (IMAGE_HEIGHT as f32 - 1.0);
