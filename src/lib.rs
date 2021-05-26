@@ -10,6 +10,11 @@ mod tests {
 
     #[test]
     fn output_image() {
-        util::output_image();
+        util::output_color_gradient();
+    }
+
+    #[test]
+    fn output_blue_white_gradient() {
+        util::output_blue_white_gradient();
     }
 }

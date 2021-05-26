@@ -5,7 +5,8 @@ use rustrays::*;
 fn main() {
     //println!("RustRays!");
     
-    output_image();
+    //output_color_gradient();
+    output_blue_white_gradient();
 
     let v1 = vectors::Vector3 {x:1.0,y:1.0,z:1.0};
     let v2 = vectors::Vector3 {x:1.0,y:2.0,z:3.0};
