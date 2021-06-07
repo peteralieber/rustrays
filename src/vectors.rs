@@ -7,7 +7,7 @@ pub trait Length {
     fn length_squared(&self) -> f32;
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Vector3 {
     pub x: f32,
     pub y: f32,

@@ -2,15 +2,50 @@
 use super::vectors::*;
 use super::rays::*;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct HitRecord {
     pub p: Vector3,
     pub normal: Vector3,
-    pub t: f32
+    pub t: f32,
+    pub front_face: bool,
 }
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
+}
+
+#[derive(Default)]
+pub struct HittableList {
+    pub hittables : Vec<Box<dyn Hittable>>,
+}
+
+impl HittableList {
+    pub fn clear(&mut self) {
+        self.hittables.clear();
+    }
+
+    pub fn add(&mut self, p: Box<dyn Hittable>) { // Had to use Box<> because trait is dynamic and therefore size isn't known at compile time
+        self.hittables.push(p);
+    }
+}
+
+impl Hittable for HittableList {
+    fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        let mut temp_rec = None;
+        //Was able to remove "hit_anything" because that logic is encapsulated in the use of Option<>, yay Rust!
+        let mut closest_so_far = t_max;
+
+        for hittable in &self.hittables {
+            match hittable.hit(r, t_min, closest_so_far) {
+                None => (),
+                Some(hit_record) => {
+                    closest_so_far = hit_record.t;
+                    temp_rec = Some(hit_record);
+                }
+            }
+        }
+        temp_rec
+    }
 }
 
 pub struct Sphere {
@@ -40,6 +75,9 @@ impl Hittable for Sphere {
         }
 
         let p = r.at(root);
-        Some(HitRecord {t:root, p:p, normal: (p - self.center)/self.radius})
+        let outward_normal = (p - self.center)/self.radius;
+        let front_face = r.direction.dot(outward_normal) < 0.0;
+        let normal = if front_face {outward_normal} else {-outward_normal};
+        Some(HitRecord {t:root, p:p, normal:normal, front_face: false})
     }
 }

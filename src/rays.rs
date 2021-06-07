@@ -8,7 +8,7 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn at(&self, t: f32) -> Point3 {
+    pub fn at(&self, t: f32) -> Point3 { // had to use &self to make it an unmutable reference to self, so this could be called by borrowers of *self
         self.origin + t*self.direction
     }
 }

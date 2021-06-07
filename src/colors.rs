@@ -6,7 +6,7 @@ use super::vectors::*;
 pub const DYN_RANGE: i32 = 256;
 const MAX_VAL: f32 = DYN_RANGE as f32 - 0.001;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Color {
     pub r: f32,
     pub g: f32,
