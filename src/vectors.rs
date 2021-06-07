@@ -1,5 +1,6 @@
 // Vector Type
 use std::ops::*;
+use super::colors::*;
 
 pub trait Length {
     fn length(&self) -> f32;
@@ -183,6 +184,14 @@ impl Vector3 {
             x,
             y,
             z,
+        }
+    }
+
+    pub fn from_color(c:Color) -> Self {
+        Self {
+            x:c.r,
+            y:c.g,
+            z:c.b,
         }
     }
     

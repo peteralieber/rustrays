@@ -1,6 +1,7 @@
 // Color Type
 
 use std::ops::*;
+use super::vectors::*;
 
 pub const DYN_RANGE: i32 = 256;
 const MAX_VAL: f32 = DYN_RANGE as f32 - 0.001;
@@ -24,6 +25,14 @@ impl Color {
             r,
             g,
             b,
+        }
+    }
+
+    pub fn from_vector(v: Vector3) -> Self {
+        Self {
+            r:v.x,
+            g:v.y,
+            b:v.z,
         }
     }
 }

@@ -3,6 +3,7 @@ pub mod util;
 pub mod vectors;
 pub mod colors;
 pub mod rays;
+pub mod primitives;
 
 #[cfg(test)]
 mod tests {
