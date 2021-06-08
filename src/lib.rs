@@ -4,6 +4,7 @@ pub mod vectors;
 pub mod colors;
 pub mod rays;
 pub mod primitives;
+pub mod cameras;
 
 #[cfg(test)]
 mod tests {
