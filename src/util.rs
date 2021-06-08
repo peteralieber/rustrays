@@ -23,6 +23,14 @@ pub fn rand_range(min:f32, max:f32) -> f32 {
     thread_rng().gen_range(min..max)
 }
 
+pub fn rand_in_unit_sphere() -> Vector3 {
+    let mut p = Vector3::rand_range(-1.0, 1.0);
+    while p.length_squared() >= 1.0 {
+        p = Vector3::rand_range(-1.0, 1.0);
+    };
+    return p
+}
+
 pub fn output_color_gradient() {
     // image properties
     const IMAGE_WIDTH: i32 = 256;
@@ -64,6 +72,7 @@ pub fn output_blue_white_gradient() {
     const ASPECT_RATIO: f32 = 16.0 / 9.0;
     const IMAGE_WIDTH: u32 = 400;
     const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
+    const MAX_DEPTH: u32 = 50;
     
     // Camera
 
@@ -93,7 +102,7 @@ pub fn output_blue_white_gradient() {
             let v = j as f32 / (IMAGE_HEIGHT as f32 - 1.0);
             let r = Ray {origin: origin, direction: (lower_left_corner + u*horizontal + v*vertical - origin)};
 
-            let pixel_color = ray_color_normals(&r, &sphere1);
+            let pixel_color = ray_color_normals(&r, &sphere1, MAX_DEPTH);
 
             println!("{}", pixel_color);
         }
@@ -106,6 +115,7 @@ pub fn output_sphere_on_sphere() {
     const IMAGE_WIDTH: u32 = 400;
     const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
     const SAMPLES_PER_PIXEL: u32 = 100;
+    const MAX_DEPTH: u32 = 50;
 
     // World
     let mut world = HittableList::default();
@@ -136,9 +146,10 @@ pub fn output_sphere_on_sphere() {
                 let u = (i as f32 + rand())/(IMAGE_WIDTH as f32 - 1.0);
                 let v = (j as f32 + rand())/(IMAGE_HEIGHT as f32 - 1.0);
                 let r = cam.get_ray(u, v);
-                pixel_color += ray_color_normals(&r, &world);
+                pixel_color += ray_color_normals(&r, &world, MAX_DEPTH);
             }
             pixel_color /= SAMPLES_PER_PIXEL as f32;
+            pixel_color.gamma_correct();
             println!("{}", pixel_color);
         }
     }
@@ -153,13 +164,17 @@ pub fn output_sphere_on_sphere() {
     discriminant > 0.0
 }*/
 
-pub fn ray_color_normals(r: &Ray, world: &impl Hittable) -> Color {
-    match world.hit(r, 0.0, INFINITY) {
+pub fn ray_color_normals(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
+    if depth <= 0 {
+        return Color::new(0.0,0.0,0.0);
+    }
+
+    match world.hit(r, 0.001, INFINITY) {
         None => return ray_color_bg(r),
         Some(hit_record) => {
-            return 0.5 * (Color::from_vector(hit_record.normal) + Color::new(1.0,1.0,1.0,));
+            let target = hit_record.p + hit_record.normal + rand_in_unit_sphere();
+            return 0.5 * ray_color_normals(&Ray{origin:hit_record.p, direction:target-hit_record.p}, world, depth-1)
         },
     }
-    //ray_color(r)
 }
 

@@ -35,6 +35,12 @@ impl Color {
             b:v.z,
         }
     }
+
+    pub fn gamma_correct(&mut self) {
+        self.r = self.r.sqrt();
+        self.g = self.g.sqrt();
+        self.b = self.b.sqrt();
+    }
 }
 
 impl Add for Color {

@@ -1,6 +1,7 @@
 // Vector Type
 use std::ops::*;
 use super::colors::*;
+use super::util::*;
 
 pub trait Length {
     fn length(&self) -> f32;
@@ -193,6 +194,14 @@ impl Vector3 {
             y:c.g,
             z:c.b,
         }
+    }
+
+    pub fn rand() -> Self {
+        Self::new(rand(), rand(), rand())
+    }
+
+    pub fn rand_range(min: f32, max: f32) -> Self {
+        Self::new(rand_range(min,max),rand_range(min,max),rand_range(min,max))
     }
     
 }
