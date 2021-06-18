@@ -50,3 +50,69 @@ pub fn ray_color_normals(r: &Ray, world: &impl Hittable) -> Color {
     }
 }
 ```
+
+# 4 Rays, Camera, Background!
+
+This is where I hit my first snag with borrowing and mutability. I originally implemented the ```at(t)``` function as I would with any languange:
+
+```rust
+pub struct Ray {
+    pub origin: Point3,
+    pub direction: Vector3
+}
+
+impl Ray {
+    pub fn at(self, t: f32) -> Point3 {
+        self.origin + t*self.direction
+    }
+}
+```
+
+Great! Now I can create rays and find a location at ```t```.  However, this quickly fell apart when using this in the context of a hittable object (implemented as a Hittable trait).
+
+```rust
+impl Hittable for Sphere {
+    fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        //find root
+        //...
+        let p = r.at(root);
+        let outward_normal = (p - self.center)/self.radius;
+        let front_face = r.direction.dot(outward_normal) < 0.0;
+        let normal = if front_face {outward_normal} else {-outward_normal};
+        Some(HitRecord {t:root, p:p, normal:normal, front_face: false})
+    }
+}
+```
+
+I pass in the ray as an immutable reference because I don't need to change the ray, but only use it to find where it lands.  However, since my 'at' method has self as a mutable value, issues ensued because here I accept the ray as an immutable reference. There were a few more steps I glossed over, but essentially, I had to make the 'at' method use an immutable reference such that I could call it on borrowed references of Ray.
+
+```rust
+impl Ray {
+    pub fn at(&self, t: f32) -> Point3 { // had to use &self to make it an unmutable reference to self, so this could be called by borrowers of *self
+        self.origin + t*self.direction
+    }
+}
+```
+
+I also learned about using Option enums to avoid the need to have the hit record returned through a argument.  I have to say, this was refreshing at first, then felt a little verbose due to the return value handling, but eventually I came to really like this methodology.  This made for a nice implementation of hittable list.
+
+```rust
+impl Hittable for HittableList {
+    fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        let mut temp_rec = None;
+        //Was able to remove "hit_anything" because that logic is encapsulated in the use of Option<>, yay Rust!
+        let mut closest_so_far = t_max;
+
+        for hittable in &self.hittables {
+            match hittable.hit(r, t_min, closest_so_far) {
+                None => (),
+                Some(hit_record) => {
+                    closest_so_far = hit_record.t;
+                    temp_rec = Some(hit_record);
+                }
+            }
+        }
+        temp_rec
+    }
+}
+```
