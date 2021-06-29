@@ -68,7 +68,13 @@ impl Ray {
 }
 ```
 
-Great! Now I can create rays and find a location at ```t```.  However, this quickly fell apart when using this in the context of a hittable object (implemented as a Hittable trait).
+# 5 Adding a Sphere
+
+This section was relatively straight-forward in Rust, even as a new Rustacean. Since I had read the Ray Tracing In One Weekend through a couple times, I did split the implementation of the ray_color function into a background and the sphere at this point. This made it easier to move to hittables and sphere objects.
+
+# 6 Surface Normals and Hittable Objects
+
+I can create rays and find a location at ```t```.  However, this quickly fell apart when using this in the context of a hittable object (implemented as a Hittable trait).
 
 ```rust
 impl Hittable for Sphere {
@@ -116,3 +122,106 @@ impl Hittable for HittableList {
     }
 }
 ```
+
+I was very relieved when I got to the Shared Pointers section of the tutorial because I am using Rust. Due to this fact, keeping track of ownership, lifetimes, and releasing memory is built into the language and no library is needed. Furthermore, Rust will prevent me from making mistakes in using such a library at compile time, which ensures correctness and safety, if adding a bit of complexity as a beginner.
+
+# 7
+
+I honestly spend more time than I thought I would on random utility functions. Rust's support for random numbers was different than other languages I've used, so there was a bit of a learn curve. Ultimately, I used the thread_rng utility as the base random generator and built on that. After that, it was straighforward to implement the random vectors and unit vectors needed using functionality I had already implemented in my structs.
+
+```rust
+// Produce a random float [0,1)
+pub fn rand() -> f32 {
+    thread_rng().gen_range(0.0..1.0)
+}
+
+// Produce a random float [min,max)
+pub fn rand_range(min:f32, max:f32) -> f32 {
+    thread_rng().gen_range(min..max)
+}
+```
+
+During implementation of the Camera object is when I ran into much of the reference and borrowing issues of the Ray struct. It is here that I decided I didn't want the Ray struct to implement Copy because it is becoming a more complex object. I had to be careful when using these objects and implementing methods (such as useing ```&self```). After this, implementing the actual Camera struct was a relatively straighforward port from C++.
+
+When implementing the clamping and pixel sampling, I deviated slightly from the tutorial. Since I was using the Display train on a Color object to print out colors, I did not incorporate the samples per pixel into this trait, but did implement clamping within that trait:
+
+```rust
+impl std::fmt::Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}, {}, {}", (self.r.clamp(0.0, 0.999)*MAX_VAL) as u32, 
+                                (self.g.clamp(0.0, 0.999)*MAX_VAL) as u32, 
+                                (self.b.clamp(0.0, 0.999)*MAX_VAL) as u32)
+    }
+}
+```
+
+For sampling, I simply put it into the render function (which I pulled out of main into my utility module):
+
+```rust
+pub fn output_sphere_on_sphere() {
+    // image properties
+    const ASPECT_RATIO: f32 = 16.0 / 9.0;
+    const IMAGE_WIDTH: u32 = 400;
+    const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
+    const SAMPLES_PER_PIXEL: u32 = 100;
+    const MAX_DEPTH: u32 = 50;
+
+    // World
+    let mut world = HittableList::default();
+    world.add(Box::new(Sphere{center: Vector3::new(0.0,0.0,-1.0), radius: 0.5}));
+    world.add(Box::new(Sphere{center: Vector3::new(0.0,-100.5,-1.0), radius: 100.0}));
+    
+    // Camera
+
+    let cam = Camera::new();
+
+    // Render Image
+    
+    println!("P3");
+    println!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT);
+    println!("{}", (DYN_RANGE-1) as u32);
+
+    for j in (0..IMAGE_HEIGHT).rev() {
+        eprintln!("\nScanlines remaining: {} ", j);
+        for i in 0..IMAGE_WIDTH {
+            let mut pixel_color = Color::new(0.0,0.0,0.0);
+            for _s in 0..SAMPLES_PER_PIXEL {
+                let u = (i as f32 + rand())/(IMAGE_WIDTH as f32 - 1.0);
+                let v = (j as f32 + rand())/(IMAGE_HEIGHT as f32 - 1.0);
+                let r = cam.get_ray(u, v);
+                pixel_color += ray_color_bounce(&r, &world, MAX_DEPTH);
+            }
+            pixel_color /= SAMPLES_PER_PIXEL as f32;
+            pixel_color.gamma_correct();
+            println!("{}", pixel_color);
+        }
+    }
+}
+```
+
+# 8 Simple Diffuse
+
+I implement a diffuse material manually by reimplementing my color function as ```ray_color_bounce()```, as used above. I went straight to implementing a lambertian diffuse material using a function to calculate a new ray based on a hit record and randome point in a sphere offset by the normal:
+
+```rust
+pub fn rand_lamb_vector(hit_record: HitRecord) -> Vector3 {
+    hit_record.p + hit_record.normal + rand_in_unit_sphere().unit_vector()
+}
+
+pub fn ray_color_bounce(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
+    if depth <= 0 {
+        return Color::new(0.0,0.0,0.0);
+    }
+
+    match world.hit(r, 0.001, INFINITY) {
+        None => return ray_color_bg(r),
+        Some(hit_record) => {
+            let target = rand_lamb_vector(hit_record);
+            return 0.5 * ray_color_bounce(&Ray{origin:hit_record.p, direction:target-hit_record.p}, world, depth-1)
+        },
+    }
+}
+```
+
+# 9 Metal and Materials
+

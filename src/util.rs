@@ -31,8 +31,8 @@ pub fn rand_in_unit_sphere() -> Vector3 {
     return p
 }
 
-pub fn rand_lamb_vector() -> Vector3 {
-    rand_in_unit_sphere().unit_vector()
+pub fn rand_lamb_vector(hit_record: HitRecord) -> Vector3 {
+    hit_record.p + hit_record.normal + rand_in_unit_sphere().unit_vector()
 }
 
 pub fn output_color_gradient() {
@@ -185,7 +185,7 @@ pub fn ray_color_bounce(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
     match world.hit(r, 0.001, INFINITY) {
         None => return ray_color_bg(r),
         Some(hit_record) => {
-            let target = hit_record.p + hit_record.normal + rand_lamb_vector();
+            let target = rand_lamb_vector(hit_record);
             return 0.5 * ray_color_bounce(&Ray{origin:hit_record.p, direction:target-hit_record.p}, world, depth-1)
         },
     }
