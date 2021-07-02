@@ -4,7 +4,9 @@ use super::vectors::*;
 use super::rays::*;
 use super::primitives::*;
 use super::cameras::*;
+use super::materials::*;
 use rand::prelude::*;
+use log::*;
 
 const INFINITY: f32 = std::f32::INFINITY;
 const PI: f32 = 3.1415926535897932385;
@@ -89,8 +91,11 @@ pub fn output_blue_white_gradient() {
     let vertical = Vector3 {x: 0.0, y: viewport_height, z: 0.0};
     let lower_left_corner = origin - horizontal/2.0 - vertical/2.0 - Vector3{x:0.0,y:0.0,z:focal_length};
 
+    // Materials
+    let material_white: Material = Default::default();
+
     // Sphere
-    let sphere1 = Sphere{center: Vector3::new(0.0, 0.0, -1.0), radius: 0.5};
+    let sphere1 = Sphere{center: Vector3::new(0.0, 0.0, -1.0), material: &material_white, radius: 0.5};
 
     // Render Image
     
@@ -121,10 +126,13 @@ pub fn output_sphere_on_sphere() {
     const SAMPLES_PER_PIXEL: u32 = 100;
     const MAX_DEPTH: u32 = 50;
 
+    // Materials
+    let material_white: Material = Default::default();
+
     // World
     let mut world = HittableList::default();
-    world.add(Box::new(Sphere{center: Vector3::new(0.0,0.0,-1.0), radius: 0.5}));
-    world.add(Box::new(Sphere{center: Vector3::new(0.0,-100.5,-1.0), radius: 100.0}));
+    world.add(Box::new(Sphere{center: Vector3::new(0.0,0.0,-1.0), material: &material_white, radius: 0.5}));
+    world.add(Box::new(Sphere{center: Vector3::new(0.0,-100.5,-1.0), material: &material_white, radius: 100.0}));
     
     // Camera
 
@@ -138,7 +146,7 @@ pub fn output_sphere_on_sphere() {
 
     for j in (0..IMAGE_HEIGHT).rev() {
         //std::io::stderr().write_fmt("\nScanlines remaining: {} ", j);
-        eprintln!("\nScanlines remaining: {} ", j);
+        info!("\nScanlines remaining: {} ", j);
         for i in 0..IMAGE_WIDTH {
             /*let u = i as f32 / (IMAGE_WIDTH as f32 - 1.0);
             let v = j as f32 / (IMAGE_HEIGHT as f32 - 1.0);

@@ -225,3 +225,65 @@ pub fn ray_color_bounce(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
 
 # 9 Metal and Materials
 
+I decided to use an enum to implement materials. I went back and forth between using traits and enums, but at the very least, I wanted to learn how to use enums and this was the perfect place.  I immediately ran into problems. I wanted to add a reference to my new material to my HitRecord (I want a reference because the same material may be in multiple objects and hit records).
+
+```rust
+#[derive(Copy, Clone, Default)]
+pub struct HitRecord<'a> {
+    pub p: Vector3,
+    pub normal: Vector3,
+    pub material: &'a Material,
+    pub t: f32,
+    pub front_face: bool,
+}
+```
+
+However, since I derived Default for this struct, Rust wanted me to implement the Default trait for &Material, which lead me down the rabbit hole of unsafe and `static code. After researching, I believe that the Default trait really should only be used for values that are wholly owned (meaning they contain only owned values). This makes sense as it eliminates the need to return new, initialized memory references from a function (memory leak, anyone?).
+
+So, I simply had to remove the derive Default and make sure and initialize hit records explicitly with a previously created material. This, consequently, helps to enforce the lifetime requirements of my structs containing Material references.
+
+My next lifetime issue was when I placed multiple "Hittable" objects in a vector for my world. I Boxed them up based on some online resources, but Box requires 'static lifetime contents, so it did not like my material reference that was on the stack.  I found a great answers [here](https://stackoverflow.com/questions/46965867/rust-borrowed-value-must-be-valid-for-the-static-lifetime) and [here](https://stackoverflow.com/questions/40053550/the-compiler-suggests-i-add-a-static-lifetime-because-the-parameter-type-may-no), but three years is a long time for Rust to change. I'm trying to avoid using any previous raytracing implementations to keep my ideas my own, but this illustrated my issue perfectly.
+
+![
+world.add(Box::new(Sphere{center: Vector3::new(0.0,0.0,-1.0), material: &material_white, radius: 0.5}));
+](readme-files/lifetime_material_dropped.png)
+
+My initial solution is simple enough -- add lifetimes to the HittableList to show that the Box inside the Vector only lasts as long as the HittableLIst. This removes the 'static lifetime on Box, allowing the materials to live at least as long as the Box created for the Sphere to go inside the HittableList Vector.  Clear as mud, right?
+
+```rust
+#[derive(Default)]
+pub struct HittableList <'a> {
+    pub hittables : Vec<Box<dyn Hittable + 'a>>,
+}
+
+impl <'a> HittableList <'a> {
+    pub fn clear(&mut self) {
+        self.hittables.clear();
+    }
+
+    pub fn add(&mut self, p: Box<dyn Hittable + 'a>) { // Had to use Box<> because trait is dynamic and therefore size isn't known at compile time
+        self.hittables.push(p);
+    }
+}
+
+impl Hittable for HittableList <'_> {
+    fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        let mut temp_rec = None;
+        //Was able to remove "hit_anything" because that logic is encapsulated in the use of Option<>, yay Rust!
+        let mut closest_so_far = t_max;
+
+        for hittable in &self.hittables {
+            match hittable.hit(r, t_min, closest_so_far) {
+                None => (),
+                Some(hit_record) => {
+                    closest_so_far = hit_record.t;
+                    temp_rec = Some(hit_record);
+                }
+            }
+        }
+        temp_rec
+    }
+}
+```
+
+Once everything compiled again, I noticed a significant decrease in performance. Dynamic execution or too much memory copying?

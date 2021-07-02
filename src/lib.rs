@@ -5,6 +5,7 @@ pub mod colors;
 pub mod rays;
 pub mod primitives;
 pub mod cameras;
+pub mod materials;
 
 #[cfg(test)]
 mod tests {
