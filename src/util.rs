@@ -6,7 +6,7 @@ use super::primitives::*;
 use super::cameras::*;
 use super::materials::*;
 use rand::prelude::*;
-use log::*;
+use super::render::*;
 
 const INFINITY: f32 = std::f32::INFINITY;
 const PI: f32 = 3.1415926535897932385;
@@ -30,7 +30,7 @@ pub fn rand_in_unit_sphere() -> Vector3 {
     while p.length_squared() >= 1.0 {
         p = Vector3::rand_range(-1.0, 1.0);
     };
-    return p
+    p
 }
 
 pub fn rand_lamb_vector(hit_record: HitRecord) -> Vector3 {
@@ -67,7 +67,7 @@ pub fn output_color_gradient() {
     }
 }
 
-fn ray_color_bg(r: &Ray) -> Color {
+pub fn ray_color_bg(r: &Ray) -> Color {
     let unit_direction = r.direction.unit_vector();
     let t = 0.5*(unit_direction.y + 1.0);
     (1.0-t)*Color{r:1.0, g:1.0, b:1.0} + t*Color{r:0.5, g:0.7, b:1.0}
@@ -119,12 +119,6 @@ pub fn output_blue_white_gradient() {
 }
 
 pub fn output_sphere_on_sphere() {
-    // image properties
-    const ASPECT_RATIO: f32 = 16.0 / 9.0;
-    const IMAGE_WIDTH: u32 = 400;
-    const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
-    const SAMPLES_PER_PIXEL: u32 = 100;
-    const MAX_DEPTH: u32 = 50;
 
     // Materials
     let material_white: Material = Default::default();
@@ -138,33 +132,15 @@ pub fn output_sphere_on_sphere() {
 
     let cam = Camera::new();
 
+    // Scene Config
+    let mut scene = SceneConfig::new();
+    scene.set_width(1200);
+    scene.samples_per_pixel = 200;
+
     // Render Image
     
-    println!("P3");
-    println!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT);
-    println!("{}", (DYN_RANGE-1) as u32);
-
-    for j in (0..IMAGE_HEIGHT).rev() {
-        //std::io::stderr().write_fmt("\nScanlines remaining: {} ", j);
-        info!("\nScanlines remaining: {} ", j);
-        for i in 0..IMAGE_WIDTH {
-            /*let u = i as f32 / (IMAGE_WIDTH as f32 - 1.0);
-            let v = j as f32 / (IMAGE_HEIGHT as f32 - 1.0);
-            let r = Ray {origin: origin, direction: (lower_left_corner + u*horizontal + v*vertical - origin)};
-
-            let pixel_color = ray_color_normals(&r, &world);*/
-            let mut pixel_color = Color::new(0.0,0.0,0.0);
-            for _s in 0..SAMPLES_PER_PIXEL {
-                let u = (i as f32 + rand())/(IMAGE_WIDTH as f32 - 1.0);
-                let v = (j as f32 + rand())/(IMAGE_HEIGHT as f32 - 1.0);
-                let r = cam.get_ray(u, v);
-                pixel_color += ray_color_bounce(&r, &world, MAX_DEPTH);
-            }
-            pixel_color /= SAMPLES_PER_PIXEL as f32;
-            pixel_color.gamma_correct();
-            println!("{}", pixel_color);
-        }
-    }
+    //render_image_ppmstdout(&scene, &world, &cam, "image.ppm");
+    render_image_png(&scene, &world, &cam, "image.png");
 }
 
 /*pub fn hit_sphere(center: &Vector3, radius: f32, r: &Ray) -> bool {
@@ -178,24 +154,21 @@ pub fn output_sphere_on_sphere() {
 
 pub fn ray_color_normals(r: &Ray, world: &impl Hittable) -> Color {
     match world.hit(r, 0.0, INFINITY) {
-        None => return ray_color_bg(r),
-        Some(hit_record) => {
-            return 0.5 * (Color::from_vector(hit_record.normal) + Color::new(1.0,1.0,1.0,));
-        },
+        None => ray_color_bg(r),
+        Some(hit_record) => 0.5 * (Color::from_vector(hit_record.normal) + Color::new(1.0,1.0,1.0,)),
     }
 }
 
-pub fn ray_color_bounce(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
-    if depth <= 0 {
+fn ray_color_bounce(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
+    if depth == 0 {
         return Color::new(0.0,0.0,0.0);
     }
 
     match world.hit(r, 0.001, INFINITY) {
-        None => return ray_color_bg(r),
+        None => ray_color_bg(r),
         Some(hit_record) => {
             let target = rand_lamb_vector(hit_record);
-            return 0.5 * ray_color_bounce(&Ray{origin:hit_record.p, direction:target-hit_record.p}, world, depth-1)
+            0.5 * ray_color_bounce(&Ray{origin:hit_record.p, direction:target-hit_record.p}, world, depth-1)
         },
     }
 }
-

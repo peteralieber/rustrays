@@ -6,6 +6,7 @@ pub mod rays;
 pub mod primitives;
 pub mod cameras;
 pub mod materials;
+pub mod render;
 
 #[cfg(test)]
 mod tests {

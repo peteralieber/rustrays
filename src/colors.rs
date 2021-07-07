@@ -43,6 +43,19 @@ impl Color {
         self.g = self.g.sqrt();
         self.b = self.b.sqrt();
     }
+
+    pub fn clamp(self, min:f32, max:f32) -> Self {
+        Self {
+            r: self.r.clamp(min, max),
+            g: self.g.clamp(min, max),
+            b: self.b.clamp(min, max),
+        }
+    }
+
+    pub fn get_png_color(&self) -> [u8; 3] {
+        let png_color = self.clamp(0.0, 0.999)*255.0;
+        [png_color.r as u8, png_color.g as u8, png_color.b as u8]
+    }
 }
 
 impl Add for Color {
