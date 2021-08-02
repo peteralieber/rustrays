@@ -33,8 +33,8 @@ pub fn rand_in_unit_sphere() -> Vector3 {
     p
 }
 
-pub fn rand_lamb_vector(hit_record: HitRecord) -> Vector3 {
-    hit_record.p + hit_record.normal + rand_in_unit_sphere().unit_vector()
+pub fn rand_lamb_vector(hit_record: &HitRecord) -> Vector3 {
+    hit_record.normal + rand_in_unit_sphere().unit_vector()
 }
 
 pub fn output_color_gradient() {
@@ -134,12 +134,12 @@ pub fn output_sphere_on_sphere() {
 
     // Scene Config
     let mut scene = SceneConfig::new();
-    scene.set_width(1200);
+    scene.set_width(600);
     scene.samples_per_pixel = 200;
 
     // Render Image
     
-    //render_image_ppmstdout(&scene, &world, &cam, "image.ppm");
+    //render_image_ppmstdout(&scene, &world, &cam);
     render_image_png(&scene, &world, &cam, "image.png");
 }
 
@@ -167,8 +167,8 @@ fn ray_color_bounce(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
     match world.hit(r, 0.001, INFINITY) {
         None => ray_color_bg(r),
         Some(hit_record) => {
-            let target = rand_lamb_vector(hit_record);
-            0.5 * ray_color_bounce(&Ray{origin:hit_record.p, direction:target-hit_record.p}, world, depth-1)
+            let target = rand_lamb_vector(&hit_record);
+            0.5 * ray_color_bounce(&Ray{origin:hit_record.p, direction:target}, world, depth-1)
         },
     }
 }

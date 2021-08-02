@@ -12,6 +12,12 @@ pub struct HitRecord<'a> {
     pub front_face: bool,
 }
 
+impl std::fmt::Display for HitRecord<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result { 
+        write!(f, "HitRecord {}, {}, {}, {}", self.p, self.normal, self.t, self.front_face)
+    }
+}
+
 pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
 }

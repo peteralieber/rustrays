@@ -4,6 +4,7 @@ use rustrays::*;
 use log::*;
 
 fn main() {
+    //set_max_level(LevelFilter::Info);
     //println!("RustRays!");
     
     //output_color_gradient();
