@@ -143,15 +143,39 @@ pub fn output_sphere_on_sphere() {
     render_image_png(&scene, &world, &cam, "image.png");
 }
 
-/*pub fn hit_sphere(center: &Vector3, radius: f32, r: &Ray) -> bool {
-    let oc = r.origin - *center;
-    let a = r.direction.dot(r.direction);
-    let b = 2.0 * oc.dot(r.direction);
-    let c = oc.dot(oc) - radius*radius;
-    let discriminant = b*b - 4.0*a*c;
-    discriminant > 0.0
-}*/
 
+
+pub fn output_metal_spheres() {
+
+    // Materials
+    let material_ground = Material::Diffuse {albedo: Color::new(0.8, 0.8, 0.0)};
+    let material_center = Material::Diffuse {albedo: Color::new(0.7, 0.3, 0.3)};
+    let material_left = Material::Metal {albedo: Color::new(0.8, 0.8, 0.8)};
+    let material_right = Material::Metal {albedo: Color::new(0.8, 0.6, 0.2)};
+
+    // World
+    let mut world = HittableList::default();
+    world.add(Box::new(Sphere{center: Vector3::new(0.0,-100.5,-1.0), material: &material_ground, radius: 100.0}));
+    world.add(Box::new(Sphere{center: Vector3::new(0.0, 0.0, -1.0), material: &material_center, radius: 0.5}));
+    world.add(Box::new(Sphere{center: Vector3::new(-1.0, 0.0, -1.0), material: &material_left, radius: 0.5}));
+    world.add(Box::new(Sphere{center: Vector3::new(1.0, 0.0, -1.0), material: &material_right, radius: 0.5}));
+    
+    // Camera
+
+    let cam = Camera::new();
+
+    // Scene Config
+    let mut scene = SceneConfig::new();
+    scene.set_width(600);
+    scene.samples_per_pixel = 200;
+
+    // Render Image
+    
+    //render_image_ppmstdout(&scene, &world, &cam);
+    render_image_png(&scene, &world, &cam, "image.png");
+}
+
+/// Color surface normals
 pub fn ray_color_normals(r: &Ray, world: &impl Hittable) -> Color {
     match world.hit(r, 0.0, INFINITY) {
         None => ray_color_bg(r),
@@ -159,6 +183,7 @@ pub fn ray_color_normals(r: &Ray, world: &impl Hittable) -> Color {
     }
 }
 
+/// Simple diffuse tracer
 fn ray_color_bounce(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
     if depth == 0 {
         return Color::new(0.0,0.0,0.0);

@@ -87,6 +87,6 @@ impl Hittable for Sphere <'_> {
         let outward_normal = (p - self.center)/self.radius;
         let front_face = r.direction.dot(outward_normal) < 0.0;
         let normal = if front_face {outward_normal} else {-outward_normal};
-        Some(HitRecord {t:root, p:p, normal:normal, material:self.material, front_face: false})
+        Some(HitRecord {t:root, p:p, normal:normal, material:self.material, front_face:front_face})
     }
 }

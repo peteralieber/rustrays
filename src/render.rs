@@ -71,7 +71,7 @@ pub fn render_image_png(scene: &SceneConfig, world: &HittableList, cam: &Camera,
                 let u = (i as f32 + rand())/(scene.image_width as f32 - 1.0);
                 let v = (j as f32 + rand())/(scene.image_height as f32 - 1.0);
                 let r = cam.get_ray(u, v);
-                pixel_color += ray_color_bounce_allwhite(&r, world, scene.max_depth);
+                pixel_color += ray_color(&r, world, scene.max_depth);
             }
             pixel_color /= scene.samples_per_pixel as f32;
             pixel_color.gamma_correct();
@@ -106,7 +106,7 @@ pub fn render_image_ppmstdout(scene: &SceneConfig, world: &HittableList, cam: &C
                 let u = (i as f32 + rand())/(scene.image_width as f32 - 1.0);
                 let v = (j as f32 + rand())/(scene.image_height as f32 - 1.0);
                 let r = cam.get_ray(u, v);
-                pixel_color += ray_color_bounce_allwhite(&r, world, scene.max_depth);
+                pixel_color += ray_color(&r, world, scene.max_depth);
             }
             pixel_color /= scene.samples_per_pixel as f32;
             pixel_color.gamma_correct();
@@ -115,7 +115,7 @@ pub fn render_image_ppmstdout(scene: &SceneConfig, world: &HittableList, cam: &C
     }
 }
 
-pub fn ray_color_bounce_allwhite(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
+pub fn ray_color(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
     if depth == 0 {
         return Color::new(0.0,0.0,0.0);
     }
@@ -124,7 +124,7 @@ pub fn ray_color_bounce_allwhite(r: &Ray, world: &impl Hittable, depth: u32) -> 
         None => ray_color_bg(r),
         Some(hit_record) => {
             let (attenuation, scattered) = hit_record.material.scatter(r, &hit_record);
-            attenuation * ray_color_bounce_allwhite(&scattered, world, depth-1)
+            attenuation * ray_color(&scattered, world, depth-1)
         },
     }
 }
