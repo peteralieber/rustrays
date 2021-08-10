@@ -11,6 +11,7 @@ pub enum Material {
     },
     Metal {
         albedo: Color,
+        fuzz: f32,
     },
 }
 
@@ -31,9 +32,9 @@ impl Material {
                 let scattered = Ray { origin: rec.p, direction: scatter_dir};
                 (*albedo, scattered)
             }
-            Self::Metal { albedo } => {
+            Self::Metal { albedo, fuzz } => {
                 let reflected = r.direction.unit_vector().reflect(rec.normal);
-                let scattered = Ray{origin: rec.p, direction: reflected};
+                let scattered = Ray{origin: rec.p, direction: reflected + *fuzz*rand_in_unit_sphere()};
                 (*albedo, scattered)
             }
         }
