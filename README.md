@@ -314,5 +314,8 @@ match self {
 }
 ```
 
-This was annoying, but now I think it is great!  Rust is forcing me to recognize and deal with all the impacts of my coding decision.  I will continue this path, but it may be interesting to see if there is a big performace difference between implementing it as an enum, and branching to metal or diffuse calculations, or simply generalizing the calculation and having parameters null out diffuse or metal properties.
+I think it is great!  Rust is forcing me to recognize and deal with all the impacts of my coding decisions.  I will continue on this path, but it may be interesting to see if there is a big performace difference between implementing it as an enum, and branching to metal or diffuse calculations, or simply generalizing the material and having parameters null out diffuse or metal properties.
 
+![Metal Spheres!](/readme-files/metal-spheres.png)
+
+# 10 Dielectrics
