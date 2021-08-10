@@ -286,4 +286,33 @@ impl Hittable for HittableList <'_> {
 }
 ```
 
-Once everything compiled again, I noticed a significant decrease in performance. Dynamic execution or too much memory copying?
+Once everything compiled again, I noticed a significant decrease in performance. Dynamic execution or too much memory copying? 
+
+The answer... don't know yet, but for now, I'm moving onto general material implementation before I get into performance and profiling.
+
+# 9 Materials (For Real This Time)
+
+Refactoring the Hittable List and Primitives implementation was a whirlwind education in lifetimes and borrowing.  I still don't know if I grasp it fully, and I still don't like the Box, but we are moving on and maybe in Rust 2021 I will find a solution that sits well with me.
+
+First up for the material is to implement the scatter function. It is interesting that Rust's NON-object-oriented programming approach really shows you where polymorphism can impact performance.  I decided to use an enum to implement my material to all for a simple reference to such a material no matter what type (at this point, just metal or diffuse).  I quickly realized that my reason for avoiding a material trait implemented by multiple structs really does a similar thing, but hides the dynamic execution into the `dyn` keyword, whereas I have to explicitly implement this in a match statement on the enum.  
+
+```rust
+match self {
+    Self::Diffuse { albedo } => {
+        let mut scatter_dir = rand_lamb_vector(rec);
+        if scatter_dir.near_zero() {
+            scatter_dir = rec.normal;
+        };
+        let scattered = Ray { origin: rec.p, direction: scatter_dir};
+        (*albedo, scattered)
+    }
+    Self::Metal { albedo } => {
+        let reflected = r.direction.unit_vector().reflect(rec.normal);
+        let scattered = Ray{origin: rec.p, direction: reflected};
+        (*albedo, scattered)
+    }
+}
+```
+
+This was annoying, but now I think it is great!  Rust is forcing me to recognize and deal with all the impacts of my coding decision.  I will continue this path, but it may be interesting to see if there is a big performace difference between implementing it as an enum, and branching to metal or diffuse calculations, or simply generalizing the calculation and having parameters null out diffuse or metal properties.
+
