@@ -17,7 +17,6 @@ const MAX_DEPTH: u32 = 50;
 const DYN_RANGE: u32 = 256;
 
 const INFINITY: f32 = std::f32::INFINITY;
-const PI: f32 = 3.1415926535897932385;
 
 pub struct SceneConfig {
     aspect_ratio: f32,
@@ -72,7 +71,7 @@ pub fn render_image_png(scene: &SceneConfig, world: &HittableList, cam: &Camera,
                 let u = (i as f32 + rand())/(scene.image_width as f32 - 1.0);
                 let v = (j as f32 + rand())/(scene.image_height as f32 - 1.0);
                 let r = cam.get_ray(u, v);
-                pixel_color += ray_color_bounce(&r, world, scene.max_depth);
+                pixel_color += ray_color(&r, world, scene.max_depth);
             }
             pixel_color /= scene.samples_per_pixel as f32;
             pixel_color.gamma_correct();
@@ -86,7 +85,7 @@ pub fn render_image_png(scene: &SceneConfig, world: &HittableList, cam: &Camera,
     writer.write_image_data(&data).unwrap();
 }
 
-pub fn render_image_ppmstdout(scene: &SceneConfig, world: &HittableList, cam: &Camera, filename: &str) {
+pub fn render_image_ppmstdout(scene: &SceneConfig, world: &HittableList, cam: &Camera) {
     // Render Image
     
     println!("P3");
@@ -107,7 +106,7 @@ pub fn render_image_ppmstdout(scene: &SceneConfig, world: &HittableList, cam: &C
                 let u = (i as f32 + rand())/(scene.image_width as f32 - 1.0);
                 let v = (j as f32 + rand())/(scene.image_height as f32 - 1.0);
                 let r = cam.get_ray(u, v);
-                pixel_color += ray_color_bounce(&r, world, scene.max_depth);
+                pixel_color += ray_color(&r, world, scene.max_depth);
             }
             pixel_color /= scene.samples_per_pixel as f32;
             pixel_color.gamma_correct();
@@ -116,7 +115,7 @@ pub fn render_image_ppmstdout(scene: &SceneConfig, world: &HittableList, cam: &C
     }
 }
 
-pub fn ray_color_bounce(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
+pub fn ray_color(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
     if depth == 0 {
         return Color::new(0.0,0.0,0.0);
     }
@@ -124,8 +123,44 @@ pub fn ray_color_bounce(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
     match world.hit(r, 0.001, INFINITY) {
         None => ray_color_bg(r),
         Some(hit_record) => {
-            let target = rand_lamb_vector(hit_record);
-            0.5 * ray_color_bounce(&Ray{origin:hit_record.p, direction:target-hit_record.p}, world, depth-1)
+            let (attenuation, scattered) = hit_record.material.scatter(r, &hit_record);
+            attenuation * ray_color(&scattered, world, depth-1)
+        },
+    }
+}
+
+pub fn ray_color_bounce_davenbusters(r: &Ray, world: &impl Hittable, depth: u32) -> Color {
+    if depth == 0 {
+        return Color::new(0.0,0.0,0.0);
+    }
+
+    match world.hit(r, 0.001, INFINITY) {
+        None => ray_color_bg(r),
+        Some(hit_record) => {
+            //println!("Hit: {}", hit_record);
+            let vertnormcomp = hit_record.normal.y * 3.0 + 6.0;
+            //println!("zrange: {}", zrange);
+            let color = if vertnormcomp > 5.0 {
+                Color::new(1.0, 6.0 - vertnormcomp, 0.0)
+            }
+            else if vertnormcomp > 4.0 {
+                Color::new(vertnormcomp - 4.0, 1.0, 0.0)
+            }
+            else if vertnormcomp > 3.0 {
+                Color::new(0.0, 1.0, 4.0 - vertnormcomp)
+            }
+            else if vertnormcomp > 2.0 {
+                Color::new(0.0, vertnormcomp - 2.0, 1.0)
+            }
+            else if vertnormcomp > 1.0 {
+                Color::new(2.0 - vertnormcomp, 0.0, 1.0)
+            }
+            else {
+                Color::new(1.0, 0.0, 1.0 - vertnormcomp)
+            };
+
+            let target = rand_lamb_vector(&hit_record);
+            color * ray_color_bounce_davenbusters(&Ray{origin:hit_record.p, direction:target}, world, depth-1)
         },
     }
 }

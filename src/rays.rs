@@ -2,6 +2,7 @@
 use super::vectors::*;
 use Vector3 as Point3;
 
+#[derive(Default)]
 pub struct Ray {
     pub origin: Point3,
     pub direction: Vector3
