@@ -75,10 +75,10 @@ impl Hittable for Sphere <'_> {
         }
         let sqrtd = discriminant.sqrt();
 
-        let root = (-half_b - sqrtd) / a;
+        let mut root = (-half_b - sqrtd) / a;
         if root < t_min || t_max < root {
-            let nroot = (-half_b + sqrtd) / a;
-            if nroot < t_min || t_max < nroot {
+            root = (-half_b + sqrtd) / a;
+            if root < t_min || t_max < root {
                 return None;
             }
         }
