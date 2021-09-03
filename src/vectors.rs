@@ -212,4 +212,11 @@ impl Vector3 {
     pub fn reflect(self, n: Self) -> Self {
         self - 2.0 * self.dot(n) * n
     }
+
+    pub fn refract(self, n: Self, etai_over_etat: f32) -> Self {
+        let cos_theta = -self.dot(-n).min(1.0);
+        let r_out_perp = etai_over_etat * (self + (cos_theta*n));
+        let r_out_parallel = -( (1.0 -(r_out_perp.length_squared()) ).sqrt()) * n;
+        r_out_perp + r_out_parallel
+    }
 }

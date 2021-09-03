@@ -13,7 +13,7 @@ const ASPECT_RATIO: f32 = 16.0 / 9.0;
 const IMAGE_WIDTH: u32 = 400;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u32;
 const SAMPLES_PER_PIXEL: u32 = 100;
-const MAX_DEPTH: u32 = 50;
+const MAX_DEPTH: u32 = 10;
 const DYN_RANGE: u32 = 256;
 
 const INFINITY: f32 = std::f32::INFINITY;

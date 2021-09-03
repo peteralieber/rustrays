@@ -13,6 +13,10 @@ pub enum Material {
         albedo: Color,
         fuzz: f32,
     },
+    Dialectric {
+        albedo: Color,
+        index_of_refraction: f32,
+    }
 }
 
 impl Material {
@@ -35,6 +39,13 @@ impl Material {
             Self::Metal { albedo, fuzz } => {
                 let reflected = r.direction.unit_vector().reflect(rec.normal);
                 let scattered = Ray{origin: rec.p, direction: reflected + *fuzz*rand_in_unit_sphere()};
+                (*albedo, scattered)
+            }
+            Self::Dialectric { albedo, index_of_refraction } => {
+                let refraction_ratio = if rec.front_face {1.0/index_of_refraction} else {*index_of_refraction};
+                let unit_direction = r.direction.unit_vector();
+                let refracted = unit_direction.refract(rec.normal, refraction_ratio);
+                let scattered = Ray{origin: rec.p, direction: refracted};
                 (*albedo, scattered)
             }
         }

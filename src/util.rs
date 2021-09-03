@@ -149,8 +149,8 @@ pub fn output_metal_spheres() {
 
     // Materials
     let material_ground = Material::Diffuse {albedo: Color::new(0.8, 0.8, 0.0)};
-    let material_center = Material::Diffuse {albedo: Color::new(0.7, 0.3, 0.3)};
-    let material_left = Material::Metal {albedo: Color::new(0.8, 0.8, 0.8), fuzz: 0.1};
+    let material_center = Material::Dialectric {albedo: Color::new(0.7, 0.3, 0.3), index_of_refraction: 1.5};
+    let material_left = Material::Dialectric {albedo: Color::new(0.8, 0.8, 0.8), index_of_refraction: 1.5};
     let material_right = Material::Metal {albedo: Color::new(0.8, 0.6, 0.2), fuzz: 0.4};
 
     // World
@@ -166,8 +166,8 @@ pub fn output_metal_spheres() {
 
     // Scene Config
     let mut scene = SceneConfig::new();
-    scene.set_width(400);
-    scene.samples_per_pixel = 150;
+    scene.set_width(200);
+    scene.samples_per_pixel = 100;
 
     // Render Image
     
