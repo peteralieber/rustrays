@@ -149,15 +149,16 @@ pub fn output_metal_spheres() {
 
     // Materials
     let material_ground = Material::Diffuse {albedo: Color::new(0.8, 0.8, 0.0)};
-    let material_center = Material::Dialectric {albedo: Color::new(0.8, 0.8, 0.8), index_of_refraction: 1.5};
-    let material_left = Material::Dialectric {albedo: Color::new(0.8, 0.8, 0.8), index_of_refraction: 1.5};
-    let material_right = Material::Metal {albedo: Color::new(0.8, 0.6, 0.2), fuzz: 0.4};
+    let material_center = Material::Diffuse {albedo: Color::new(0.1, 0.2, 0.5)};
+    let material_left = Material::Dialectric {albedo: Color::new(1.0, 1.0, 1.0), index_of_refraction: 1.5};
+    let material_right = Material::Metal {albedo: Color::new(0.8, 0.6, 0.2), fuzz: 0.005};
 
     // World
     let mut world = HittableList::default();
     world.add(Box::new(Sphere{center: Vector3::new(0.0,-100.5,-1.0), material: &material_ground, radius: 100.0}));
     world.add(Box::new(Sphere{center: Vector3::new(0.0, 0.0, -1.0), material: &material_center, radius: 0.5}));
     world.add(Box::new(Sphere{center: Vector3::new(-1.0, 0.0, -1.0), material: &material_left, radius: 0.5}));
+    world.add(Box::new(Sphere{center: Vector3::new(-1.0, 0.0, -1.0), material: &material_left, radius: -0.48}));
     world.add(Box::new(Sphere{center: Vector3::new(1.0, 0.0, -1.0), material: &material_right, radius: 0.5}));
     
     // Camera
@@ -166,8 +167,9 @@ pub fn output_metal_spheres() {
 
     // Scene Config
     let mut scene = SceneConfig::new();
-    scene.set_width(400);
+    scene.set_width(800);
     scene.samples_per_pixel = 150;
+    scene.max_depth = 30;
 
     // Render Image
     

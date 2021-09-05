@@ -44,11 +44,27 @@ impl Material {
             Self::Dialectric { albedo, index_of_refraction } => {
                 let refraction_ratio = if rec.front_face {1.0/index_of_refraction} else {*index_of_refraction};
                 let unit_direction = r.direction.unit_vector();
-                let refracted = unit_direction.refract(rec.normal, refraction_ratio);
-                let scattered = Ray{origin: rec.p, direction: refracted};
-                (*albedo, scattered)
+                let cos_theta = (-unit_direction).dot(rec.normal).min(1.0);
+                let sin_theta = (1.0 - cos_theta*cos_theta).sqrt();
+                let cannot_refract = ( refraction_ratio * sin_theta ) > 1.0;
+                if cannot_refract || Material::reflectance(cos_theta, refraction_ratio) > rand() {
+                    let reflected = unit_direction.reflect(rec.normal);
+                    let scattered = Ray{origin: rec.p, direction: reflected};
+                    (*albedo, scattered)
+                }
+                else {
+                    let refracted = unit_direction.refract(rec.normal, refraction_ratio);
+                    let scattered = Ray{origin: rec.p, direction: refracted};
+                    (*albedo, scattered)
+                }
             }
         }
+    }
+
+    fn reflectance(cosine: f32, ref_idx: f32) -> f32 {
+        let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        let r0r0 = r0*r0;
+        r0r0 + (1.0 - r0r0)*((1.0 - cosine).powi(5))
     }
 }
 

@@ -319,3 +319,9 @@ I think it is great!  Rust is forcing me to recognize and deal with all the impa
 ![Metal Spheres!](/readme-files/metal-spheres.png)
 
 # 10 Dielectrics
+
+It wasn't until I starting implementing Dielectrics that I actually understood the normals direction and implications it had on processing and whether it is done at geometry or lighting time. The biggest trouble I had with implemention was simply math transcription. Many of rust's math funciton (abs, sqrt) are implemented as member functions of base numeric types. This makes the code look more like reverse polish notation than the original equation and C implementation (hello 9th grade and the TI vs HP debate).
+
+Adding the inner sphere to make a hollow sphere gave me an unexpected (but correct) result.  The refraction inside the glass part of the sphere caused more distortion than I anticipated.  Making the glass ball with a thinner shell (outer sphere radius 0.5 and inner radius 0.48) made it look more like I envisioned.
+
+![Hallow Glass!](/readme-files/image_hallowglass.png)
