@@ -131,7 +131,7 @@ pub fn output_sphere_on_sphere() {
     
     // Camera
 
-    let cam = Camera::new(Point3::new(0.0,0.0,0.0), Point3::new(0.0,0.0,-1.0), Point3::new(0.0,1.0,0.0), 60.0, 16.0/9.0);
+    let cam = Camera::new(Point3::new(0.0,0.0,0.0), Point3::new(0.0,0.0,-1.0), Point3::new(0.0,1.0,0.0), 60.0, 16.0/9.0, 1.0, 1.0);
 
     // Scene Config
     let mut scene = SceneConfig::new();
@@ -164,7 +164,14 @@ pub fn output_metal_spheres() {
     
     // Camera
 
-    let cam = Camera::new(Point3::new(-2.0,2.0,1.0), Point3::new(0.0,0.0,-1.0), Point3::new(0.0,1.0,0.0), 60.0, 16.0/9.0);
+    let lookfrom = Point3::new(-2.0,2.0,1.0);
+    let lookat = Point3::new(0.0,0.0,-1.0);
+    let vup = Point3::new(0.0,1.0,0.0);
+
+    let focus_dist = (lookfrom - lookat).length();
+    let aperture = 0.4;
+
+    let cam = Camera::new(lookfrom, lookat, vup, 40.0, 16.0/9.0, aperture, focus_dist);
 
     // Scene Config
     let mut scene = SceneConfig::new();

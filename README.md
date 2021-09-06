@@ -330,6 +330,10 @@ Adding the inner sphere to make a hollow sphere gave me an unexpected (but corre
 
 Most of the camera I already implemented as part of previous sessions, but this added positionability and field of view.
 
+![Camera Position and View](/readme-files/image_camview.png)
+
 # 12 Defocus Blur
 
-![Camera Position and View](/readme-files/image_camview.png)
+Relatively simple to implement based on the book, but will take more thought to gain intuition for focus distance and the math there.
+
+![Defocus Blur](/readme-files/image_focusblur.png)
