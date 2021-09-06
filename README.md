@@ -325,3 +325,11 @@ It wasn't until I starting implementing Dielectrics that I actually understood t
 Adding the inner sphere to make a hollow sphere gave me an unexpected (but correct) result.  The refraction inside the glass part of the sphere caused more distortion than I anticipated.  Making the glass ball with a thinner shell (outer sphere radius 0.5 and inner radius 0.48) made it look more like I envisioned.
 
 ![Hallow Glass!](/readme-files/image_hallowglass.png)
+
+# 11 Camera
+
+Most of the camera I already implemented as part of previous sessions, but this added positionability and field of view.
+
+# 12 Defocus Blur
+
+![Camera Position and View](/readme-files/image_camview.png)

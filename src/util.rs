@@ -7,6 +7,7 @@ use super::cameras::*;
 use super::materials::*;
 use rand::prelude::*;
 use super::render::*;
+use Vector3 as Point3;
 
 const INFINITY: f32 = std::f32::INFINITY;
 const PI: f32 = 3.1415926535897932385;
@@ -130,7 +131,7 @@ pub fn output_sphere_on_sphere() {
     
     // Camera
 
-    let cam = Camera::new();
+    let cam = Camera::new(Point3::new(0.0,0.0,0.0), Point3::new(0.0,0.0,-1.0), Point3::new(0.0,1.0,0.0), 60.0, 16.0/9.0);
 
     // Scene Config
     let mut scene = SceneConfig::new();
@@ -158,18 +159,18 @@ pub fn output_metal_spheres() {
     world.add(Box::new(Sphere{center: Vector3::new(0.0,-100.5,-1.0), material: &material_ground, radius: 100.0}));
     world.add(Box::new(Sphere{center: Vector3::new(0.0, 0.0, -1.0), material: &material_center, radius: 0.5}));
     world.add(Box::new(Sphere{center: Vector3::new(-1.0, 0.0, -1.0), material: &material_left, radius: 0.5}));
-    world.add(Box::new(Sphere{center: Vector3::new(-1.0, 0.0, -1.0), material: &material_left, radius: -0.48}));
+    world.add(Box::new(Sphere{center: Vector3::new(-1.0, 0.0, -1.0), material: &material_left, radius: -0.49}));
     world.add(Box::new(Sphere{center: Vector3::new(1.0, 0.0, -1.0), material: &material_right, radius: 0.5}));
     
     // Camera
 
-    let cam = Camera::new();
+    let cam = Camera::new(Point3::new(-2.0,2.0,1.0), Point3::new(0.0,0.0,-1.0), Point3::new(0.0,1.0,0.0), 60.0, 16.0/9.0);
 
     // Scene Config
     let mut scene = SceneConfig::new();
     scene.set_width(800);
     scene.samples_per_pixel = 150;
-    scene.max_depth = 30;
+    scene.max_depth = 20;
 
     // Render Image
     
